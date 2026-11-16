@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="{{ 'en' if lang == 'en' else 'pt-BR' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="catDocTitle">{{ 'All tests - guardrail code' if lang == 'en' else 'Todos os testes - guardrail code' }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <header class="top-navbar sticky-top py-2 px-4">
+        <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-mark" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark" id="catBrandTitle">guardrail code</h5>
+                    <p class="text-secondary small mb-0" id="catBrandSub">{{ 'Complete catalog of tests, modules, and evaluation rules' if lang == 'en' else 'Catálogo completo de testes, módulos e regras de verificação' }}</p>
+                </div>
+            </div>
+
+            <nav class="d-flex flex-wrap align-items-center gap-2" aria-label="Menu principal">
+                <a href="/" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" id="catNavAuditor">
+                    {{ 'Project auditor' if lang == 'en' else 'Auditor de projeto' }}
+                </a>
+                <a href="/#guardrail" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold" id="catNavSkill">
+                    {{ 'Create skill and guardrail' if lang == 'en' else 'Criar skill e guardrail' }}
+                </a>
+                <a href="/testes" class="btn btn-sm btn-dark rounded-pill px-3 fw-semibold" id="catNavTests">
+                    {{ 'All tests' if lang == 'en' else 'Todos os testes' }}
+                </a>
+            </nav>
+
+            <div class="btn-group btn-group-sm" role="group" aria-label="Idioma">
+                <button type="button" class="btn {{ 'btn-outline-secondary' if lang == 'en' else 'btn-dark' }} fw-semibold cat-lang-btn" data-lang="pt">PT-BR</button>
+                <button type="button" class="btn {{ 'btn-dark' if lang == 'en' else 'btn-outline-secondary' }} fw-semibold cat-lang-btn" data-lang="en">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="catToastBanner" class="container-fluid px-4 pt-3" style="display: none;">
+        <div id="catToastAlert" class="alert alert-dismissible fade show border-0 shadow-sm mb-0 py-2 px-3 small d-flex justify-content-between align-items-center" role="alert">
+            <span id="catToastMsg"></span>
+            <button type="button" class="btn-close btn-sm position-static" onclick="document.getElementById('catToastBanner').style.display='none'"></button>
+        </div>
+    </div>
+
+    <main class="container py-4">
+
+        <!-- Methodology & Project Git Repository Source -->
+        <section class="row g-3 mb-4">
+            <div class="col-lg-7">
+                <div class="card rounded-4 shadow-card h-100">
+                    <div class="card-body p-4">
+                        <span class="badge bg-primary-subtle text-primary mb-2" id="scoreMethodBadge">{{ 'Methodology' if lang == 'en' else 'Metodologia de avaliação' }}</span>
+                        <h6 class="fw-bold mb-2" id="scoreMethodTitle">{{ 'How the security grade (A-F) and score are calculated' if lang == 'en' else 'Como a nota de segurança (A-F) e o score são calculados' }}</h6>
+                        <p class="text-secondary small mb-2" id="scoreMethodDesc">
+                            {{ 'Each active finding deducts points by severity: CRITICAL (-22), HIGH (-12), MEDIUM (-5), LOW (-2). Disabled rules do not count toward penalties.' if lang == 'en' else 'Cada problema ativo encontrado subtrai pontos pelo nível de risco: CRITICAL (-22), HIGH (-12), MEDIUM (-5), LOW (-2). Regras desativadas são ignoradas.' }}
+                        </p>
+                        <code class="d-inline-block bg-light border rounded px-3 py-2 small mb-3" id="scoreFormulaBox">{{ docs.scoring.formula }}</code>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0" id="gradesScaleTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th id="thGrade">{{ 'Grade' if lang == 'en' else 'Nota' }}</th>
+                                        <th id="thRange">{{ 'Score range' if lang == 'en' else 'Faixa' }}</th>
+                                        <th id="thMeaning">{{ 'Deploy status' if lang == 'en' else 'Significado no deploy' }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card rounded-4 shadow-card h-100">
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <span class="badge bg-dark-subtle text-dark mb-2" id="gitSourceBadge">{{ 'Project repository' if lang == 'en' else 'Repositório oficial do projeto' }}</span>
+                            <h6 class="fw-bold mb-2" id="gitSourceTitle">{{ 'Git source for modules and updates' if lang == 'en' else 'Origem no Git para buscar novos testes e módulos' }}</h6>
+                            <p class="text-secondary small mb-3" id="gitSourceDesc">
+                                {{ 'Link this interface to the GitHub repository of this project to track new detection blocks and updates.' if lang == 'en' else 'Aponte para o seu repositório GitHub deste projeto para buscar novos módulos de verificação e atualizações.' }}
+                            </p>
+                            <div class="input-group input-group-sm mb-2">
+                                <input type="url" id="githubRepoUrlInput" class="form-control font-monospace bg-light" value="{{ docs.github_repo_url }}">
+                                <button type="button" class="btn btn-outline-primary fw-semibold" id="btnSaveRepoUrl">{{ 'Save' if lang == 'en' else 'Salvar' }}</button>
+                            </div>
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" id="btnCheckRepoUpdates">
+                                    {{ 'Check for updates' if lang == 'en' else 'Verificar atualizações' }}
+                                </button>
+                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold" id="btnDownloadRepoUpdates" style="display: none;">
+                                    {{ 'Download new tests' if lang == 'en' else 'Baixar novos testes' }}
+                                </button>
+                            </div>
+                            <div id="repoUpdateStatusBox" class="small text-secondary mb-2" style="display: none;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="small text-secondary" id="activeSummaryCounter"></span>
+                            <a id="githubRepoDirectLink" href="{{ docs.github_repo_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-semibold">
+                                {{ 'Open on GitHub' if lang == 'en' else 'Abrir no GitHub' }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Thematic Block Filter Bar (+ Adicionar mais testes ALWAYS last button) -->
+        <section class="card rounded-4 shadow-card mb-4">
+            <div class="card-body p-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="d-flex flex-wrap align-items-center gap-2" id="blocksNavBar"></div>
+                    <input type="text" id="catalogSearchInput" class="form-control form-control-sm bg-light" style="max-width: 240px;" placeholder="{{ 'Filter rule or ID...' if lang == 'en' else 'Filtrar regra ou código...' }}">
+                </div>
+            </div>
+        </section>
+
+        <!-- Grouped Test Blocks Container -->
+        <div id="catalogBlocksContainer" class="d-flex flex-column gap-4"></div>
+
+    </main>
+
+    <!-- Modal: + Adicionar mais testes (Módulos + GitHub + Regra customizada) -->
+    <div class="modal fade" id="addTestsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-bottom py-3 px-4">
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0 text-dark" id="addModalTitle">{{ 'Add more security tests and modules' if lang == 'en' else 'Adicionar mais testes e módulos' }}</h6>
+                        <small class="text-secondary" id="addModalSub">{{ 'Install optional rule packs, link your GitHub repo, or register a custom regex test.' if lang == 'en' else 'Instale pacotes extras, sincronize com o seu GitHub ou crie um teste customizado.' }}</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Optional Modules Store -->
+                    <h6 class="fw-bold small text-dark mb-2" id="optModulesTitle">{{ 'Installable test modules' if lang == 'en' else 'Módulos disponíveis para instalar ou desinstalar' }}</h6>
+                    <div id="optionalModulesList" class="d-flex flex-column gap-2 mb-4"></div>
+
+                    <hr>
+
+                    <!-- Custom Regex Test Creator -->
+                    <h6 class="fw-bold small text-dark mb-2" id="customRuleTitle">{{ 'Create a custom test rule' if lang == 'en' else 'Criar novo teste personalizado (regex)' }}</h6>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-3">
+                            <input type="text" id="crId" class="form-control form-control-sm font-monospace" placeholder="ID (ex: CUSTOM-PIX)">
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" id="crTitle" class="form-control form-control-sm" placeholder="{{ 'Rule title' if lang == 'en' else 'Nome do teste' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <select id="crCategory" class="form-select form-select-sm">
+                                <option value="SECRETS">Credenciais</option>
+                                <option value="EXPOSED_DATA">Bancos</option>
+                                <option value="DEPLOY_TRAPS" selected>Deploy</option>
+                                <option value="SAST_DS">SAST</option>
+                                <option value="PRIVACY_LGPD">LGPD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select id="crSeverity" class="form-select form-select-sm">
+                                <option value="CRITICAL">CRITICAL</option>
+                                <option value="HIGH">HIGH</option>
+                                <option value="MEDIUM" selected>MEDIUM</option>
+                                <option value="LOW">LOW</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" id="crPattern" class="form-control form-control-sm font-monospace" placeholder="Regex Python (ex: (?:token_interno|chave_pix)\s*=)">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input type="text" id="crWhy" class="form-control form-control-sm" placeholder="{{ 'Identified risk explanation' if lang == 'en' else 'Riscos encontrados' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" id="crFix" class="form-control form-control-sm" placeholder="{{ 'How to fix' if lang == 'en' else 'Como resolver' }}">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-4 fw-semibold" id="btnCreateCustomRule">
+                        {{ 'Add custom test' if lang == 'en' else 'Salvar novo teste' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const INITIAL_CATALOG = {{ docs | tojson }};
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentLang = localStorage.getItem('app_lang') === 'en' ? 'en' : 'pt';
+            let currentDocs = INITIAL_CATALOG;
+            let activeBlockFilter = 'ALL';
+
+            const blocksContainer = document.getElementById('catalogBlocksContainer');
+            const blocksNavBar = document.getElementById('blocksNavBar');
+            const searchEl = document.getElementById('catalogSearchInput');
+            const addModal = new bootstrap.Modal(document.getElementById('addTestsModal'));
+
+            function showCatToast(msg, type = 'info') {
+                const b = document.getElementById('catToastBanner');
+                const a = document.getElementById('catToastAlert');
+                document.getElementById('catToastMsg').textContent = msg;
+                a.className = `alert alert-${type} alert-dismissible fade show border-0 shadow-sm mb-0 py-2 px-3 small d-flex justify-content-between align-items-center`;
+                b.style.display = 'block';
+                setTimeout(() => { b.style.display = 'none'; }, 5000);
+            }
+
+            function renderCatalog(docs) {
+                currentDocs = docs;
+                const isEn = docs.lang === 'en';
+                document.getElementById('catDocTitle').textContent = isEn ? 'All tests - guardrail code' : 'Todos os testes - guardrail code';
+                document.getElementById('catBrandTitle').textContent = 'guardrail code';
+                document.getElementById('catBrandSub').textContent = isEn
+                    ? 'Complete catalog of tests, modules, and evaluation rules'
+                    : 'Catálogo completo de testes, módulos e regras de verificação';
+                document.getElementById('catNavAuditor').textContent = isEn ? 'Project auditor' : 'Auditor de projeto';
+                document.getElementById('catNavSkill').textContent = isEn ? 'Create skill and guardrail' : 'Criar skill e guardrail';
+                document.getElementById('catNavTests').textContent = isEn ? 'All tests' : 'Todos os testes';
+                document.getElementById('scoreMethodBadge').textContent = isEn ? 'Methodology' : 'Metodologia de avaliação';
+                document.getElementById('scoreMethodTitle').textContent = isEn
+                    ? 'How the security grade (A-F) and score are calculated'
+                    : 'Como a nota de segurança (A-F) e o score são calculados';
+                document.getElementById('scoreMethodDesc').textContent = isEn
+                    ? 'Each active finding deducts points by severity: CRITICAL (-22), HIGH (-12), MEDIUM (-5), LOW (-2). Disabled rules do not count toward penalties.'
+                    : 'Cada problema ativo encontrado subtrai pontos pelo nível de risco: CRITICAL (-22), HIGH (-12), MEDIUM (-5), LOW (-2). Regras desativadas são ignoradas.';
+                document.getElementById('scoreFormulaBox').textContent = docs.scoring.formula;
+                document.getElementById('gitSourceBadge').textContent = isEn ? 'Project repository' : 'Repositório oficial do projeto';
+                document.getElementById('gitSourceTitle').textContent = isEn ? 'Git source for modules and updates' : 'Origem no Git para buscar novos testes e módulos';
+                document.getElementById('gitSourceDesc').textContent = isEn
+                    ? 'Link this interface to the GitHub repository of this project to track new detection blocks and updates.'
+                    : 'Aponte para o seu repositório GitHub deste projeto para buscar novos módulos de verificação e atualizações.';
+                document.getElementById('btnSaveRepoUrl').textContent = isEn ? 'Save' : 'Salvar';
+                document.getElementById('githubRepoDirectLink').textContent = isEn ? 'Open on GitHub' : 'Abrir no GitHub';
+                document.getElementById('btnCheckRepoUpdates').textContent = isEn ? 'Check for updates' : 'Verificar atualizações';
+                document.getElementById('btnDownloadRepoUpdates').textContent = isEn ? 'Download new tests' : 'Baixar novos testes';
+                document.getElementById('githubRepoUrlInput').value = docs.github_repo_url || '';
+                document.getElementById('githubRepoDirectLink').href = docs.github_repo_url || '#';
+                document.getElementById('activeSummaryCounter').textContent = isEn
+                    ? `${docs.enabled_tests} active tests (${docs.disabled_tests} disabled)`
+                    : `${docs.enabled_tests} testes ativos (${docs.disabled_tests} desativados)`;
+                searchEl.placeholder = isEn ? 'Filter rule or ID...' : 'Filtrar regra ou código...';
+
+                const tbody = document.querySelector('#gradesScaleTable tbody');
+                tbody.innerHTML = (docs.scoring.grades || []).map(g => `
+                    <tr>
+                        <td><span class="badge grade-${g.grade} text-white px-2">${g.grade}</span></td>
+                        <td class="font-monospace small">${escapeHtml(g.range)}</td>
+                        <td class="small">${escapeHtml(g.meaning)}</td>
+                    </tr>
+                `).join('');
+
+                renderBlockNavBar();
+                renderBlocks();
+                renderOptionalModulesModal();
+            }
+
+            function renderBlockNavBar() {
+                const isEn = currentDocs.lang === 'en';
+                const allBtnLabel = isEn ? 'All blocks' : 'Todos os blocos';
+                const blockButtons = (currentDocs.blocks || []).map(b => `
+                    <button type="button" class="btn btn-sm ${activeBlockFilter === b.category ? 'btn-dark' : 'btn-outline-secondary'} rounded-pill px-3 block-filter-btn" data-cat="${escapeAttr(b.category)}">
+                        ${escapeHtml(b.label)} <span class="ms-1 opacity-75">(${b.active_count}/${b.total_count})</span>
+                    </button>
+                `).join('');
+
+                const addBtnLabel = isEn ? '+ Add more tests' : '+ Adicionar mais testes';
+                blocksNavBar.innerHTML = `
+                    <button type="button" class="btn btn-sm ${activeBlockFilter === 'ALL' ? 'btn-dark' : 'btn-outline-secondary'} rounded-pill px-3 block-filter-btn" data-cat="ALL">
+                        ${allBtnLabel}
+                    </button>
+                    ${blockButtons}
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" id="btnOpenAddTestsModal">
+                        ${addBtnLabel}
+                    </button>
+                `;
+
+                blocksNavBar.querySelectorAll('.block-filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        activeBlockFilter = btn.dataset.cat;
+                        renderBlockNavBar();
+                        renderBlocks();
+                    });
+                });
+                document.getElementById('btnOpenAddTestsModal').addEventListener('click', () => addModal.show());
+            }
+
+            function renderBlocks() {
+                const q = searchEl.value.trim().toLowerCase();
+                const isEn = currentDocs.lang === 'en';
+                const riskTitle = isEn ? 'Identified risks:' : 'Riscos encontrados:';
+                const fixTitle = isEn ? 'Remediation:' : 'Medida de segurança:';
+
+                const visibleBlocks = (currentDocs.blocks || []).filter(b => activeBlockFilter === 'ALL' || b.category === activeBlockFilter);
+                let htmlOut = '';
+
+                visibleBlocks.forEach(block => {
+                    const matchedTests = (block.tests || []).filter(t => {
+                        if (!q) return true;
+                        return `${t.id} ${t.title} ${t.method} ${t.plain_why}`.toLowerCase().includes(q);
+                    });
+                    if (matchedTests.length === 0) return;
+
+                    const cardsHtml = matchedTests.map(t => {
+                        const toggleLabel = t.enabled
+                            ? (isEn ? 'Disable test' : 'Desativar teste')
+                            : (isEn ? 'Enable test' : 'Ativar teste');
+                        const toggleCls = t.enabled ? 'btn-outline-secondary' : 'btn-success';
+                        const statusPill = t.enabled
+                            ? ''
+                            : `<span class="badge bg-secondary">${isEn ? 'Disabled' : 'Desativado'}</span>`;
+                        const delBtn = t.is_custom
+                            ? `<button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-0 btn-del-custom" data-id="${escapeAttr(t.id)}">${isEn ? 'Delete' : 'Excluir'}</button>`
+                            : '';
+
+                        return `
+                            <div class="col-lg-6">
+                                <div class="finding-card sev-${t.severity} ${t.enabled ? '' : 'is-disabled-card'} p-3 h-100">
+                                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                        <div class="d-flex align-items-center flex-wrap gap-1">
+                                            <span class="sev-pill sev-pill-${t.severity}">${t.severity}</span>
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">${escapeHtml(t.method)}</span>
+                                            ${statusPill}
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <code class="small text-secondary me-1">${escapeHtml(t.id)}</code>
+                                            ${delBtn}
+                                            <button type="button" class="btn btn-sm ${toggleCls} rounded-pill px-2 py-0 fw-semibold btn-toggle-rule" data-id="${escapeAttr(t.id)}" data-next="${!t.enabled}">
+                                                ${toggleLabel}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-2">${escapeHtml(t.title)}</h6>
+                                    <p class="small text-secondary mb-2"><strong>${riskTitle}</strong> ${escapeHtml(t.plain_why)}</p>
+                                    <p class="small text-success-emphasis mb-0"><strong>${fixTitle}</strong> ${escapeHtml(t.how_to_fix)}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    htmlOut += `
+                        <section class="block-group">
+                            <div class="block-section-header d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="kpi-icon-badge bg-primary-subtle text-primary" style="width: 32px; height: 32px;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                        </svg>
+                                    </span>
+                                    <h6 class="fw-bold mb-0 text-dark">${escapeHtml(block.label)}</h6>
+                                </div>
+                                <span class="badge bg-light text-secondary border">${block.active_count}/${block.total_count} ${isEn ? 'active' : 'ativos'}</span>
+                            </div>
+                            <div class="row g-3">${cardsHtml}</div>
+                        </section>
+                    `;
+                });
+
+                blocksContainer.innerHTML = htmlOut || `<div class="alert alert-light border small">${isEn ? 'No rules match this filter.' : 'Nenhuma regra encontrada com este filtro.'}</div>`;
+
+                blocksContainer.querySelectorAll('.btn-toggle-rule').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const ruleId = btn.dataset.id;
+                        const enabled = btn.dataset.next === 'true';
+                        fetch('/api/tests/toggle-rule', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ rule_id: ruleId, enabled: enabled, lang: currentDocs.lang })
+                        })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.status === 'success' && res.docs) {
+                                renderCatalog(res.docs);
+                                showCatToast(
+                                    enabled ? (isEn ? `Rule ${ruleId} enabled.` : `Teste ${ruleId} ativado.`) : (isEn ? `Rule ${ruleId} disabled.` : `Teste ${ruleId} desativado.`),
+                                    'success'
+                                );
+                            }
+                        });
+                    });
+                });
+
+                blocksContainer.querySelectorAll('.btn-del-custom').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        fetch('/api/tests/custom-rule', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ rule_id: btn.dataset.id, lang: currentDocs.lang })
+                        })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.status === 'success' && res.docs) renderCatalog(res.docs);
+                        });
+                    });
+                });
+            }
+
+            function renderOptionalModulesModal() {
+                const isEn = currentDocs.lang === 'en';
+                const listEl = document.getElementById('optionalModulesList');
+                listEl.innerHTML = (currentDocs.optional_modules || []).map(m => `
+                    <div class="p-3 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <strong class="small text-dark d-block">${escapeHtml(m.name)} (${m.rule_count} ${isEn ? 'tests' : 'testes'})</strong>
+                            <span class="text-secondary" style="font-size: 0.78rem;">${escapeHtml(m.description)}</span>
+                        </div>
+                        <button type="button" class="btn btn-sm ${m.installed ? 'btn-outline-danger' : 'btn-primary'} rounded-pill px-3 fw-semibold btn-toggle-mod" data-id="${escapeAttr(m.id)}" data-install="${!m.installed}">
+                            ${m.installed ? (isEn ? 'Uninstall' : 'Desinstalar') : (isEn ? 'Install module' : 'Instalar módulo')}
+                        </button>
+                    </div>
+                `).join('');
+
+                listEl.querySelectorAll('.btn-toggle-mod').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const modId = btn.dataset.id;
+                        const install = btn.dataset.install === 'true';
+                        fetch('/api/tests/toggle-module', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ module_id: modId, install: install, lang: currentDocs.lang })
+                        })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.status === 'success' && res.docs) {
+                                renderCatalog(res.docs);
+                                showCatToast(install ? (isEn ? 'Module installed.' : 'Módulo instalado nos testes ativos.') : (isEn ? 'Module uninstalled.' : 'Módulo desinstalado.'), 'success');
+                            }
+                        });
+                    });
+                });
+            }
+
+            document.getElementById('btnSaveRepoUrl').addEventListener('click', () => {
+                const url = document.getElementById('githubRepoUrlInput').value.trim();
+                fetch('/api/tests/repo-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ github_repo_url: url, lang: currentDocs.lang })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success' && res.docs) {
+                        renderCatalog(res.docs);
+                        showCatToast(currentLang === 'en' ? 'GitHub URL updated.' : 'Repositório GitHub atualizado.', 'success');
+                    } else {
+                        showCatToast(res.message || 'Erro ao salvar URL.', 'danger');
+                    }
+                });
+            });
+
+            document.getElementById('btnCheckRepoUpdates').addEventListener('click', () => {
+                const statusBox = document.getElementById('repoUpdateStatusBox');
+                const dlBtn = document.getElementById('btnDownloadRepoUpdates');
+                statusBox.style.display = 'block';
+                statusBox.className = 'small text-secondary mb-2';
+                statusBox.textContent = currentLang === 'en' ? 'Checking GitHub repository...' : 'Consultando repositório no GitHub...';
+                dlBtn.style.display = 'none';
+
+                fetch('/api/tests/check-updates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lang: currentDocs.lang })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        statusBox.textContent = res.message || '';
+                        statusBox.className = res.has_updates ? 'small text-success fw-semibold mb-2' : 'small text-secondary mb-2';
+                        dlBtn.style.display = res.has_updates ? 'inline-block' : 'none';
+                    } else {
+                        statusBox.className = 'small text-danger mb-2';
+                        statusBox.textContent = res.message || 'Erro ao verificar atualizações.';
+                    }
+                })
+                .catch(() => {
+                    statusBox.className = 'small text-danger mb-2';
+                    statusBox.textContent = currentLang === 'en' ? 'Failed to reach update service.' : 'Falha ao consultar atualizações.';
+                });
+            });
+
+            document.getElementById('btnDownloadRepoUpdates').addEventListener('click', () => {
+                fetch('/api/tests/download-updates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lang: currentDocs.lang })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        if (res.docs) renderCatalog(res.docs);
+                        document.getElementById('btnDownloadRepoUpdates').style.display = 'none';
+                        const statusBox = document.getElementById('repoUpdateStatusBox');
+                        statusBox.style.display = 'block';
+                        statusBox.className = 'small text-success fw-semibold mb-2';
+                        statusBox.textContent = res.message || '';
+                        showCatToast(res.message || 'Atualizado.', 'success');
+                    } else {
+                        showCatToast(res.message || 'Erro ao baixar testes.', 'danger');
+                    }
+                });
+            });
+
+            document.getElementById('catNavSkill').addEventListener('click', () => {
+                localStorage.setItem('gc_active_tab', '#tab-guardrail');
+            });
+
+            document.getElementById('btnCreateCustomRule').addEventListener('click', () => {
+                const payload = {
+                    id: document.getElementById('crId').value.trim() || 'CUSTOM-RULE',
+                    title: document.getElementById('crTitle').value.trim(),
+                    category: document.getElementById('crCategory').value,
+                    severity: document.getElementById('crSeverity').value,
+                    pattern: document.getElementById('crPattern').value.trim(),
+                    plain_why: document.getElementById('crWhy').value.trim(),
+                    how_to_fix: document.getElementById('crFix').value.trim(),
+                    lang: currentDocs.lang,
+                };
+                fetch('/api/tests/custom-rule', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success' && res.docs) {
+                        renderCatalog(res.docs);
+                        addModal.hide();
+                        showCatToast(currentLang === 'en' ? 'Custom rule saved.' : 'Novo teste salvo com sucesso.', 'success');
+                    } else {
+                        showCatToast(res.message || 'Erro ao criar regra.', 'danger');
+                    }
+                });
+            });
+
+            function switchLang(newLang) {
+                currentLang = newLang;
+                localStorage.setItem('app_lang', newLang);
+                document.querySelectorAll('.cat-lang-btn').forEach(btn => {
+                    const active = btn.dataset.lang === newLang;
+                    btn.className = `btn ${active ? 'btn-dark' : 'btn-outline-secondary'} fw-semibold cat-lang-btn`;
+                });
+                fetch(`/api/tests-catalog?lang=${encodeURIComponent(newLang)}`)
+                    .then(r => r.json())
+                    .then(data => { if (data.status === 'success') renderCatalog(data); });
+            }
+
+            document.querySelectorAll('.cat-lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchLang(btn.dataset.lang));
+            });
+            searchEl.addEventListener('input', renderBlocks);
+
+            if (currentLang !== INITIAL_CATALOG.lang) {
+                switchLang(currentLang);
+            } else {
+                renderCatalog(INITIAL_CATALOG);
+            }
+
+            function escapeHtml(txt) {
+                const div = document.createElement('div');
+                div.textContent = txt == null ? '' : String(txt);
+                return div.innerHTML;
+            }
+            function escapeAttr(txt) {
+                return (txt == null ? '' : String(txt)).replace(/"/g, '&quot;');
+            }
+        });
+    </script>
+</body>
+</html>

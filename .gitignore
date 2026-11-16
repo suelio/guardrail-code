@@ -1,0 +1,34 @@
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# Local databases and data science artifacts
+*.sqlite
+*.sqlite3
+*.db
+*.duckdb
+*.pkl
+*.joblib
+*.parquet
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Local scanner preferences
+config/scanner_preferences.json
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
