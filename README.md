@@ -6,6 +6,8 @@
 [![Release](https://img.shields.io/badge/release-v0.1.0--beta-success.svg)](https://github.com/suelio/guardrail-code/releases/tag/v0.1.0-beta)
 [![GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-0a66c2.svg)](https://suelio.github.io/guardrail-code/)
 
+**Idioma / Language:** Português (BR) | [English](README.en.md)
+
 O **guardrail code** é uma plataforma web local e motor de análise estática em Python desenvolvido para auditar projetos antes de qualquer `git push` ou deploy em produção, com foco em código gerado com auxílio de IA ("vibe coding") e fluxos de ciência de dados.
 
 O projeto elimina riscos silenciosos de exposição ao inspecionar credenciais hardcoded, bancos de dados em pastas públicas, falhas estruturais via AST Python, cobertura do `.gitignore`, pacotes alucinados por IA no PyPI, vulnerabilidades conhecidas (OSV.dev) e ainda gera arquivos de guardrail prontos para manter agentes de IA sob controle.
@@ -97,7 +99,8 @@ guardrail-code/
 |-- CHANGELOG.md                      # Histórico de alterações da release
 |-- ATTRIBUTIONS.md                   # Créditos de bibliotecas e APIs públicas
 |-- LICENSE                           # Licença MIT
-`-- README.md                         # Documentação principal
+|-- README.md                         # Documentação principal (PT-BR)
+`-- README.en.md                      # Documentação em inglês (EN)
 ```
 
 ---
